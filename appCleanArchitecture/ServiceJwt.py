@@ -1,5 +1,4 @@
 from flask import Flask, json, jsonify, request, make_response
-import Token.Aplication.GetToken as getTokenAplication
 import Token.Aplication.ValidateToken as validateTokenAplication
 import Infraestructure.Messages as messages
 from functools import wraps
@@ -13,14 +12,6 @@ def unprotected():
 @app.route("/")
 def healthy():
     return jsonify({"message" : messages.MessageUser("Remember, remember the Fifth of November, The Gunpowder Treason and Plot, I know of no reason Why the Gunpowder Treason Should ever be forgot... V for Vendetta")})
-
-@app.route("/token", methods = ['POST'])
-def token():
-    responseUser = getTokenAplication.getToken(request.get_json())
-    if responseUser:
-        return jsonify({"token" : responseUser})                                                                                                                            
-    return make_response(jsonify({"message":messages.MessageUser("Could not verify the user!!!")}), 401, 
-        {'WWW-authenticate':'Basic realm="Login Required"'})
 
 def token_required(f):
     @wraps(f)
