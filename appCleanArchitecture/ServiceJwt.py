@@ -1,6 +1,5 @@
-from flask import Flask, json, jsonify, request, make_response
+from flask import Flask, json, jsonify, request, make_response, Response
 import Token.Aplication.GetToken as getTokenAplication
-import Token.Aplication.ValidateToken as validateTokenAplication
 import Infraestructure.Messages as messages
 from functools import wraps
 
@@ -17,26 +16,14 @@ def healthy():
 @app.route("/token", methods = ['POST'])
 def token():
     responseUser = getTokenAplication.getToken(request.get_json())
-    if responseUser:
-        return jsonify({"token" : responseUser})                                                                                                                            
-    return make_response(jsonify({"message":messages.MessageUser("Could not verify the user!!!")}), 401, 
-        {'WWW-authenticate':'Basic realm="Login Required"'})
-
-def token_required(f):
-    @wraps(f)
-    def decorated (*args, **kwargs):
-        responseValidToken = validateTokenAplication.testToken(request.get_json())
-        if responseValidToken:
-            return jsonify({"dataUser" : responseValidToken})         
-        return make_response(jsonify({"message":messages.MessageUser("Token Invalid!!!")}), 403, {'WWW-authenticate':'Basic realm="Token Missing!"'}) 
-        
-        return f(*args, **kwargs)
-    return decorated
-
-@app.route("/login", methods = ['POST'])
-@token_required
-def login():
-    return jsonify({"message" : messages.MessageUser("Run Forrest!!! Run!!!!")})
+    if responseUser:  
+        flaskResponse = Response(responseUser)
+    else:
+        data = json.dumps({'message': messages.MessageUser("Could not verify the user!!!")})
+        flaskResponse = Response(data)
+        flaskResponse.status_code = 403
+    flaskResponse.headers["Content-Type"] = "application/json"    
+    return flaskResponse
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8001, debug=True)

@@ -1,6 +1,7 @@
 import jwt
 import datetime
 import Token.Infraestructure.TokenProperties as tokenProperties
+import Token.Domain.Token as tokenObject
 
 #Metodo que genera un token basado en los datos del usuario
 def getToken(dataUser):
@@ -8,7 +9,8 @@ def getToken(dataUser):
     if dataUser:
         dataToken = setDataToken(dataUser, configuration)
         token = jwt.encode(dataToken, configuration['JwtSecret'], configuration['JwtAlgorithm'])
-        return token
+        token = tokenObject.Token(token)
+        return token.toJSON()
     return None
 
 def setDataToken(dataUser, configuration):
